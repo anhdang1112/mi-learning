@@ -39,8 +39,8 @@ export function MemoryMatch({ words, onFinish }: { words: Word[]; onFinish: (s: 
 
   function flip(t: Tile) {
     if (lock.current || open.includes(t.key) || matched.includes(t.pair)) return;
-    sfx('tap');
-    speak(t.w.en, 'en-US', 0.8);
+    sfx('flip');
+    speak(t.w.say ?? t.w.en, 'en-US', 0.8);
     const next = [...open, t.key];
     setOpen(next);
     if (next.length === 2) {

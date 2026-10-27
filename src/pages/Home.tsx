@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useProfile, STICKER_EVERY } from '../lib/store';
+import { useApp, useProfile, setSetting, STICKER_EVERY } from '../lib/store';
 import { TopBar } from '../components/TopBar';
 import { Mascot } from '../components/Mascot';
 import { sfx } from '../lib/audio';
@@ -13,6 +13,7 @@ function greeting(name: string) {
 
 export function Home() {
   const p = useProfile()!;
+  const { music } = useApp();
   const nav = useNavigate();
   const toNext = STICKER_EVERY - (p.stars % STICKER_EVERY);
 
@@ -39,6 +40,14 @@ export function Home() {
         </button>
       </div>
 
+      <button type="button" className="video-banner" onClick={() => go('/videos')}>
+        <span className="big-emoji small">🎬</span>
+        <span>
+          <b>Xem và hát</b>
+          <small>Video bài hát tiếng Anh vui nhộn</small>
+        </span>
+      </button>
+
       <div className="stat-row">
         <button type="button" className="stat" onClick={() => go('/rewards')}>
           <span className="stat-icon">🏅</span>
@@ -57,6 +66,15 @@ export function Home() {
       </div>
 
       <nav className="footer-links">
+        <button
+          type="button"
+          onClick={() => {
+            setSetting('music', !music);
+            sfx('tap');
+          }}
+        >
+          {music ? '🎵 Tắt nhạc' : '🔇 Bật nhạc'}
+        </button>
         <button type="button" onClick={() => go('/profiles')}>
           👥 Đổi bé
         </button>

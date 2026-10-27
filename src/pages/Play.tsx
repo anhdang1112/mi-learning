@@ -8,6 +8,8 @@ import { Confetti } from '../components/Confetti';
 import { Quiz, type RoundStats } from '../games/Quiz';
 import { Flashcards } from '../games/Flashcards';
 import { MemoryMatch } from '../games/MemoryMatch';
+import { Spell } from '../games/Spell';
+import { Simon } from '../games/Simon';
 
 interface Outcome {
   stars: number;
@@ -26,7 +28,7 @@ export function Play() {
   const [outcome, setOutcome] = useState<Outcome | null>(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const questions = useMemo(() => act?.make?.() ?? [], [act, round]);
+  const questions = useMemo(() => act?.make?.(act.level ?? 1) ?? [], [act, round]);
 
   const finish = useCallback(
     (stats: RoundStats) => {
@@ -34,6 +36,8 @@ export function Play() {
       const stars = act.kind === 'flash' ? 1 : starsFor(stats.mistakes);
       const res = recordResult(act.id, stars, stats.correct, stats.total);
       sfx('win');
+      for (let i = 0; i < stars; i++) window.setTimeout(() => sfx('star'), 900 + i * 280);
+      if (res.sticker) window.setTimeout(() => sfx('pop'), 1700);
       window.setTimeout(() => speak(stars === 3 ? 'Perfect!' : 'Great job!', 'en-US'), 700);
       setOutcome({ stars, gained: res.gained, sticker: res.sticker, stats });
     },
@@ -100,6 +104,8 @@ export function Play() {
       {act.kind === 'quiz' && <Quiz key={round} questions={questions} onFinish={finish} />}
       {act.kind === 'flash' && act.words && <Flashcards key={round} words={act.words} onFinish={finish} />}
       {act.kind === 'match' && act.words && <MemoryMatch key={round} words={act.words} onFinish={finish} />}
+      {act.kind === 'spell' && act.words && <Spell key={round} words={act.words} onFinish={finish} />}
+      {act.kind === 'simon' && <Simon key={round} level={act.level ?? 1} onFinish={finish} />}
     </main>
   );
 }

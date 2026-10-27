@@ -10,7 +10,7 @@ export function Flashcards({ words, onFinish }: { words: Word[]; onFinish: (s: R
   const w = words[i];
 
   useEffect(() => {
-    const t = window.setTimeout(() => speak(w.en, 'en-US', 0.7), 250);
+    const t = window.setTimeout(() => speak(w.say ?? w.en, 'en-US', 0.7), 250);
     return () => window.clearTimeout(t);
   }, [w]);
 
@@ -33,7 +33,7 @@ export function Flashcards({ words, onFinish }: { words: Word[]; onFinish: (s: R
           <span key={k} className={k < i ? 'dot done' : k === i ? 'dot now' : 'dot'} />
         ))}
       </div>
-      <button type="button" className="card" onClick={() => speak(w.en, 'en-US', 0.7)} key={w.en}>
+      <button type="button" className="card" onClick={() => speak(w.say ?? w.en, 'en-US', 0.7)} key={w.en}>
         <span className="card-emoji">{w.emoji}</span>
         <span className="card-word">{w.en}</span>
         <span className="card-hint">🔊 Chạm để nghe lại</span>

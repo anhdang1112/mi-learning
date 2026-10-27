@@ -1,25 +1,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { ENGLISH, MATH, MATH_GROUPS, type Activity } from '../data/activities';
-import { TOPICS } from '../data/vocab';
+import { ENGLISH, ENGLISH_GROUPS, MATH, MATH_GROUPS, activityKeys, type Activity, type Group } from '../data/activities';
 import { useProfile } from '../lib/store';
 import { TopBar } from '../components/TopBar';
 import { Mascot } from '../components/Mascot';
 import { sfx } from '../lib/audio';
 
-interface Group {
-  id: string;
-  title: string;
-  emoji: string;
-  color: string;
-}
-
-function groupsFor(subject: string): Group[] {
-  return subject === 'en' ? TOPICS : MATH_GROUPS;
-}
-
-function activitiesFor(subject: string, group: string): Activity[] {
-  return (subject === 'en' ? ENGLISH : MATH).filter((a) => a.group === group);
-}
+const groupsFor = (subject: string): Group[] => (subject === 'en' ? ENGLISH_GROUPS : MATH_GROUPS);
+const activitiesFor = (subject: string, group: string): Activity[] => (subject === 'en' ? ENGLISH : MATH).filter((a) => a.group === group);
 
 function Stars({ n }: { n: number }) {
   return (
@@ -33,13 +20,14 @@ function Stars({ n }: { n: number }) {
   );
 }
 
-/** Level 1: pick a topic. Level 2: pick an activity inside the topic. */
+/** Level 1: pick a topic. Level 2: pick an activity (and difficulty level) inside the topic. */
 export function Learn() {
   const { subject = 'en', group } = useParams();
   const p = useProfile()!;
   const nav = useNavigate();
   const groups = groupsFor(subject);
   const subjectTitle = subject === 'en' ? 'Tiếng Anh' : 'Toán tư duy';
+  const starsOf = (key: string) => p.results[key]?.stars ?? 0;
 
   if (!group) {
     return (
@@ -49,7 +37,8 @@ export function Learn() {
         <div className="topic-grid">
           {groups.map((g) => {
             const acts = activitiesFor(subject, g.id);
-            const got = acts.reduce((s, a) => s + (p.results[a.id]?.stars ?? 0), 0);
+            const keys = acts.flatMap(activityKeys);
+            const got = keys.reduce((s, k) => s + starsOf(k), 0);
             return (
               <button
                 key={g.id}
@@ -64,7 +53,7 @@ export function Learn() {
                 <span className="topic-emoji">{g.emoji}</span>
                 <span className="topic-title">{g.title}</span>
                 <span className="topic-meta">
-                  ★ {got}/{acts.length * 3}
+                  ★ {got}/{keys.length * 3}
                 </span>
               </button>
             );
@@ -76,32 +65,42 @@ export function Learn() {
 
   const g = groups.find((x) => x.id === group);
   const acts = activitiesFor(subject, group);
+  const open = (id: string) => nav(`/play/${id}`);
+
   return (
     <main className="page">
       <TopBar title={g ? `${g.emoji} ${g.title}` : subjectTitle} back={`/learn/${subject}`} />
       <div className="act-list">
-        {acts.map((a, i) => {
-          const r = p.results[a.id];
-          const prevDone = i === 0 || a.subject === 'math' || (p.results[acts[i - 1].id]?.stars ?? 0) > 0;
-          return (
-            <button
-              key={a.id}
-              type="button"
-              className={`act ${prevDone ? '' : 'recommended-later'}`}
-              onClick={() => {
-                sfx('tap');
-                nav(`/play/${a.id}`);
-              }}
-            >
+        {acts.map((a) =>
+          a.levels ? (
+            <div key={a.id} className="act with-levels">
+              <div className="act-head">
+                <span className="act-emoji">{a.emoji}</span>
+                <span className="act-text">
+                  <b>{a.title}</b>
+                  <small>{a.desc}</small>
+                </span>
+              </div>
+              <div className="level-row">
+                {activityKeys(a).map((k, i) => (
+                  <button key={k} type="button" className="level-btn" onClick={() => open(k)}>
+                    <span>Cấp {i + 1}</span>
+                    <Stars n={starsOf(k)} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <button key={a.id} type="button" className="act" onClick={() => open(a.id)}>
               <span className="act-emoji">{a.emoji}</span>
               <span className="act-text">
                 <b>{a.title}</b>
                 <small>{a.desc}</small>
               </span>
-              <Stars n={r?.stars ?? 0} />
+              <Stars n={starsOf(a.id)} />
             </button>
-          );
-        })}
+          )
+        )}
       </div>
     </main>
   );

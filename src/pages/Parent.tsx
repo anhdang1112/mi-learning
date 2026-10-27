@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ALL_ACTIVITIES } from '../data/activities';
+import { ALL_ACTIVITIES, ALL_KEYS, activityKeys, getActivity } from '../data/activities';
 import { deleteProfile, resetProfile, setPin, setSetting, useApp, type Profile } from '../lib/store';
 import { TopBar } from '../components/TopBar';
 
@@ -59,15 +59,16 @@ function ChildReport({ p }: { p: Profile }) {
   const days = lastDays(7);
   const maxStars = Math.max(1, ...days.map((d) => p.log[d]?.stars ?? 0));
   const bySubject = (subject: 'en' | 'math') => {
-    const acts = ALL_ACTIVITIES.filter((a) => a.subject === subject);
-    const rs = acts.map((a) => p.results[a.id]).filter(Boolean);
+    const keys = ALL_ACTIVITIES.filter((a) => a.subject === subject).flatMap(activityKeys);
+    const acts = keys;
+    const rs = keys.map((k) => p.results[k]).filter(Boolean);
     const correct = rs.reduce((s, r) => s + r.correct, 0);
     const total = rs.reduce((s, r) => s + r.total, 0);
     return { done: rs.length, all: acts.length, acc: total ? Math.round((correct / total) * 100) : null };
   };
   const en = bySubject('en');
   const math = bySubject('math');
-  const weak = ALL_ACTIVITIES.filter((a) => (p.results[a.id]?.stars ?? 3) < 2 && p.results[a.id]).map((a) => a.title);
+  const weak = ALL_KEYS.filter((k) => p.results[k] && p.results[k].stars < 2).map((k) => getActivity(k)?.title ?? k);
 
   return (
     <section className="report">
@@ -123,7 +124,7 @@ function ChildReport({ p }: { p: Profile }) {
 }
 
 export function Parent() {
-  const { profiles, sound, speech } = useApp();
+  const { profiles, sound, speech, music } = useApp();
   const [ok, setOk] = useState(false);
   return (
     <main className="page">
@@ -134,6 +135,9 @@ export function Parent() {
         <>
           <section className="report">
             <h3>⚙️ Cài đặt</h3>
+            <label className="toggle">
+              <input type="checkbox" checked={music} onChange={(e) => setSetting('music', e.target.checked)} /> Nhạc nền
+            </label>
             <label className="toggle">
               <input type="checkbox" checked={sound} onChange={(e) => setSetting('sound', e.target.checked)} /> Hiệu ứng âm thanh
             </label>

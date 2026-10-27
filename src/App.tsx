@@ -5,7 +5,9 @@ import { Home } from './pages/Home';
 import { Learn } from './pages/Learn';
 import { Play } from './pages/Play';
 import { Rewards } from './pages/Rewards';
+import { Videos } from './pages/Videos';
 import { Parent } from './pages/Parent';
+import { AudioManager } from './components/AudioManager';
 import type { ReactElement } from 'react';
 
 function PlayKeyed() {
@@ -21,6 +23,7 @@ function Guard({ children }: { children: ReactElement }) {
 export default function App() {
   return (
     <HashRouter>
+      <AudioManager />
       <Routes>
         <Route path="/profiles" element={<Profiles />} />
         <Route path="/parent" element={<Parent />} />
@@ -28,7 +31,8 @@ export default function App() {
         <Route path="/learn/:subject" element={<Guard><Learn /></Guard>} />
         <Route path="/learn/:subject/:group" element={<Guard><Learn /></Guard>} />
         <Route path="/play/:id" element={<Guard><PlayKeyed /></Guard>} />
-        <Route path="/rewards" element={<Guard><Rewards /></Guard>} />
+        <Route path="/videos" element={<Guard><Videos /></Guard>} />
+        <Route path="/rewards"element={<Guard><Rewards /></Guard>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

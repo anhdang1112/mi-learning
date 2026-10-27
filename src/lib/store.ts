@@ -25,11 +25,12 @@ export interface AppState {
   pin: string | null;
   sound: boolean;
   speech: boolean;
+  music: boolean;
 }
 
 const KEY = 'bevuihoc.v1';
 
-const defaults: AppState = { profiles: [], activeId: null, pin: null, sound: true, speech: true };
+const defaults: AppState = { profiles: [], activeId: null, pin: null, sound: true, speech: true, music: true };
 
 function load(): AppState {
   try {
@@ -112,7 +113,7 @@ export function setPin(pin: string) {
   commit({ ...state, pin });
 }
 
-export function setSetting(key: 'sound' | 'speech', value: boolean) {
+export function setSetting(key: 'sound' | 'speech' | 'music', value: boolean) {
   commit({ ...state, [key]: value });
 }
 

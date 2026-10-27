@@ -62,7 +62,7 @@ export function Quiz({ questions, onFinish }: { questions: Question[]; onFinish:
   const pictureOnly = q.options.every((o) => o.emoji && !o.label);
   const emojiLens = q.options.map((o) => (o.emoji ? [...o.emoji].length : 0));
   // options that are groups of different counts (compare quiz): one row each, one shared size
-  const isGroups = pictureOnly && Math.min(...emojiLens) !== Math.max(...emojiLens);
+  const isGroups = pictureOnly && !q.options.some((o) => o.emoji!.includes(':')) && Math.min(...emojiLens) !== Math.max(...emojiLens);
   const uniformSize = isGroups ? (Math.max(...emojiLens) > 9 ? 'xs' : 'sm') : undefined;
   const longEmoji = isGroups || emojiLens.some((n) => n > 3);
 
